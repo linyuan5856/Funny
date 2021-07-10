@@ -1,0 +1,13 @@
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\bin\Debug\netcoreapp3.1\FunnyServer.exe
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\bin\Debug\netcoreapp3.1\FunnyServer.deps.json
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\bin\Debug\netcoreapp3.1\FunnyServer.runtimeconfig.json
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\bin\Debug\netcoreapp3.1\FunnyServer.runtimeconfig.dev.json
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\bin\Debug\netcoreapp3.1\FunnyServer.dll
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\bin\Debug\netcoreapp3.1\FunnyServer.pdb
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\obj\Debug\netcoreapp3.1\FunnyServer.csprojAssemblyReference.cache
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\obj\Debug\netcoreapp3.1\FunnyServer.AssemblyInfoInputs.cache
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\obj\Debug\netcoreapp3.1\FunnyServer.AssemblyInfo.cs
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\obj\Debug\netcoreapp3.1\FunnyServer.csproj.CoreCompileInputs.cache
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\obj\Debug\netcoreapp3.1\FunnyServer.dll
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\obj\Debug\netcoreapp3.1\FunnyServer.pdb
+C:\Project\Personal\Funny\FunnyServer\FunnyServer\obj\Debug\netcoreapp3.1\FunnyServer.genruntimeconfig.cache
