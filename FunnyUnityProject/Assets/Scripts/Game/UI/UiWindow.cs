@@ -1,13 +1,18 @@
+using UnityEngine;
+
 namespace GFrame.Ui
 {
-    public class UiWindow
+    public class UiWindow : MonoBehaviour
     {
-        public bool IsTickWindow;
         public void OpenWindow()
         {
             OnOpenWindow();
         }
 
+        public void Update()
+        {
+            OnUpdate();
+        }
 
         public void CloseWindow()
         {
@@ -15,6 +20,10 @@ namespace GFrame.Ui
         }
 
         protected virtual void OnOpenWindow()
+        {
+        }
+
+        protected virtual void OnUpdate()
         {
         }
 
