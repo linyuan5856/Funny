@@ -1,3 +1,4 @@
+using GFrame;
 using GFrame.Service;
 using GFrame.System;
 using UnityEngine;
@@ -6,8 +7,8 @@ namespace FGame
 {
     public class Game
     {
-        private ServiceLocate _serviceLocate;
-        private SystemFactory _systemFactory;
+        private IGameLoop _gameLoop;
+        private GameLocate _gameLocate;
 
         public Game()
         {
@@ -22,20 +23,26 @@ namespace FGame
         private void OnCreate()
         {
             SetGameSetting();
-            _serviceLocate = ServiceLocate.Get();
-            _serviceLocate.RegisterService<LoaderService>();
-            _serviceLocate.RegisterService<AudioService>();
+            _gameLocate = new GameLocate();
+            var serviceLocate = ServiceLocate.Get();
+            var systemFactory = SystemFactory.Get(_gameLocate);
 
-            _systemFactory = SystemFactory.Get(_serviceLocate);
-            _systemFactory.CreateSystem<LoginSystem>();
-            _systemFactory.CreateSystem<UiSystem>();
-            _systemFactory.CreateSystem<BaseSystem>();
+            _gameLocate.RegisterLocate(GameDefine.SERVICE_LOCATE, serviceLocate);
+            _gameLocate.RegisterLocate(GameDefine.SYSTEM_LOCATE, systemFactory);
+            serviceLocate.RegisterService<LoaderService>();
+            serviceLocate.RegisterService<AudioService>();
+
+            systemFactory.CreateSystem<LoginSystem>();
+            systemFactory.CreateSystem<UiSystem>();
+            systemFactory.CreateSystem<BaseSystem>();
+
+            _gameLoop = new ClientGameLoop();
+            _gameLoop.Create(_gameLocate);
         }
 
         private void OnUpdate()
         {
-            _serviceLocate?.Update();
-            _systemFactory?.Update();
+            _gameLoop?.OnUpdate();
         }
 
         void SetGameSetting()

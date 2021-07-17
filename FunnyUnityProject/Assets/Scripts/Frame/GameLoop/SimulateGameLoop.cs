@@ -1,18 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class SimulateGameLoop : MonoBehaviour
+namespace GFrame
 {
-    // Start is called before the first frame update
-    void Start()
+    public class SimulateGameLoop : IGameLoop
     {
-        
-    }
+        void IGameLoop.Create(IGameLocate locate)
+        {
+        }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        void IGameLoop.OnUpdate()
+        {
+        }
     }
 }

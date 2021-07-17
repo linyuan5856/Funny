@@ -1,18 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class ClientGameLoop : MonoBehaviour
+namespace GFrame
 {
-    // Start is called before the first frame update
-    void Start()
+    public class ClientGameLoop : IGameLoop
     {
-        
-    }
+        private IGameLocate _gameLocate;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        void IGameLoop.Create(IGameLocate locate)
+        {
+            _gameLocate = locate;
+        }
+
+        void IGameLoop.OnUpdate()
+        {
+            _gameLocate?.OnUpdate();
+        }
     }
 }

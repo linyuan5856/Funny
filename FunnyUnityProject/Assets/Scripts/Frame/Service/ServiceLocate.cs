@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GFrame.Service
 {
-    public interface IServiceLocate
+    public interface IServiceLocate : ILocate
     {
         T GetService<T>() where T : IService;
 
@@ -31,7 +31,7 @@ namespace GFrame.Service
             _serviceDic = new Dictionary<Type, IService>();
         }
 
-        public void Update()
+        void ILocate.OnUpdate()
         {
             foreach (var kv in _serviceDic)
                 kv.Value.Update();

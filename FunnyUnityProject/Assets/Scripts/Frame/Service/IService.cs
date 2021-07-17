@@ -1,14 +1,6 @@
 namespace GFrame.Service
 {
-    public interface IService
+    public interface IService : ILocation
     {
-        void Create();
-
-        void Update();
-
-        void Reset();
-        
-        void Destroy();
-    }  
+    }
 }
-

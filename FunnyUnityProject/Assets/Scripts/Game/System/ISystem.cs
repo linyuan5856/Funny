@@ -1,10 +1,7 @@
-using GFrame.Service;
-
 namespace GFrame.System
 {
-    public interface ISystem
+    public interface ISystem :ILocation
     {
-        void Create(IServiceLocate locate);
-        void Update();
+        void Create(IGameLocate gameLocate);
     }
 }

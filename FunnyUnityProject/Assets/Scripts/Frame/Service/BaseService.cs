@@ -2,22 +2,22 @@ namespace GFrame.Service
 {
     public class BaseService : IService
     {
-        void IService.Create()
+        void ILocation.Create()
         {
             OnCreate();
         }
 
-        void IService.Update()
+        void ILocation.Update()
         {
             OnUpdate();
         }
 
-        void IService.Reset()
+        void ILocation.Reset()
         {
             OnReset();
         }
 
-        void IService.Destroy()
+        void ILocation.Destroy()
         {
             OnDestroy();
         }

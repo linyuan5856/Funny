@@ -1,18 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class GameDefine : MonoBehaviour
+public static class GameDefine
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public const string SERVICE_LOCATE = "ServiceLocate";
+    public const string SYSTEM_LOCATE = "SystemLocate";
 }

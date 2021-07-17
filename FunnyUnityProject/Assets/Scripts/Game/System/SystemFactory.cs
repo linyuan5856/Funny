@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using GFrame.Service;
 
 namespace GFrame.System
 {
-    public class SystemFactory
+    public class SystemFactory : ISystemLocate
     {
         private static SystemFactory _factory;
 
-        public static SystemFactory Get(IServiceLocate locate)
+        public static SystemFactory Get(IGameLocate locate)
         {
             return _factory ??= new SystemFactory(locate);
         }
@@ -18,19 +17,29 @@ namespace GFrame.System
             _factory = null;
         }
 
-        private readonly IServiceLocate _locate;
+        private IGameLocate _locate;
         private readonly Dictionary<Type, ISystem> _systemDic;
 
-        private SystemFactory(IServiceLocate locate)
+        private SystemFactory(IGameLocate locate)
         {
             _locate = locate;
             _systemDic = new Dictionary<Type, ISystem>();
         }
 
-        public void Update()
+
+        public void OnUpdate()
         {
             foreach (var map in _systemDic)
                 map.Value.Update();
+        }
+
+        public void Clear()
+        {
+            _locate = null;
+            foreach (var map in _systemDic)
+            {
+                map.Value.Create();
+            }
         }
 
         public void CreateSystem<T>() where T : ISystem
