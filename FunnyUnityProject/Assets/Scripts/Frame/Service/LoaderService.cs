@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
+
 
 namespace GFrame.Service
 {
@@ -14,10 +14,11 @@ namespace GFrame.Service
         Addressable,
     }
 
-    public class LoaderService : BaseService
+    public partial class LoaderService : BaseService
     {
         private Dictionary<ELoadType, ILoader> _loaderDic;
         private SceneLoader _sceneLoader;
+        private ELoadType _currentLoad = ELoadType.Resource;
 
         protected override void OnCreate()
         {
@@ -25,8 +26,10 @@ namespace GFrame.Service
             _sceneLoader = SceneLoader.Get();
             _loaderDic = new Dictionary<ELoadType, ILoader>
             {
-                {ELoadType.Resource, new ResourceLoader()},
-                {ELoadType.AssetDataBase, new AssetDataBaseLoader()}
+                { ELoadType.Resource, new ResourceLoader() },
+#if UNITY_EDITOR
+                { ELoadType.AssetDataBase, new AssetDataBaseLoader() }
+#endif
             };
         }
 
@@ -39,12 +42,18 @@ namespace GFrame.Service
 
         private ILoader GetLoader()
         {
-            return _loaderDic[ELoadType.AssetDataBase];
+            var success = _loaderDic.TryGetValue(_currentLoad, out var loader);
+            return success ? loader : null;
         }
 
         public T Load<T>(string path) where T : Object
         {
             return GetLoader().Load<T>(path);
+        }
+
+        public void LoadAsync<T>(string path, Action<T> callBack) where T : Object
+        {
+            GetLoader().LoadAsync<T>(path, callBack);
         }
 
         public T Instantiate<T>(string path) where T : Object
@@ -55,11 +64,6 @@ namespace GFrame.Service
         public void InstantiateAsync<T>(string path, Action<T> callBack) where T : Object
         {
             GetLoader().InstantiateAsync(path, callBack);
-        }
-
-        public void LoadAsync<T>(string path, Action<T> callBack) where T : Object
-        {
-            GetLoader().LoadAsync<T>(path, callBack);
         }
 
         public void LoadScene(string sceneName)
@@ -115,32 +119,6 @@ namespace GFrame.Service
         private T InternalLoad<T>(string path) where T : Object
         {
             return Resources.Load<T>(path);
-        }
-    }
-
-    public class AssetDataBaseLoader : ILoader
-    {
-        private const string Prefix = "Assets/";
-
-        public T Load<T>(string path) where T : Object
-        {
-            return AssetDatabase.LoadAssetAtPath<T>(Prefix + path);
-        }
-
-        public void LoadAsync<T>(string path, Action<T> callBack) where T : Object
-        {
-            throw new NotImplementedException();
-        }
-
-        public T Instantiate<T>(string path) where T : Object
-        {
-            T asset = Load<T>(path);
-            return Object.Instantiate(asset);
-        }
-
-        public void InstantiateAsync<T>(string path, Action<T> callBack) where T : Object
-        {
-            throw new NotImplementedException();
         }
     }
 }
