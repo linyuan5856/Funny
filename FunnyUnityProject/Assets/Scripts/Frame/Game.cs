@@ -1,5 +1,6 @@
 using GFrame;
 using GFrame.Service;
+using GFrame.StateMachine;
 using GFrame.System;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace FGame
     {
         private IGameLoop _gameLoop;
         private GameLocate _gameLocate;
+        private StateMachine _stateMachine;
 
         public Game()
         {
@@ -34,10 +36,16 @@ namespace FGame
 
             systemFactory.CreateSystem<LoginSystem>();
             systemFactory.CreateSystem<UiSystem>();
-            systemFactory.CreateSystem<BaseSystem>();
+            systemFactory.CreateSystem<BagSystem>();
+
+            _stateMachine = new StateMachine();
+            _stateMachine.RegisterState(GameDefine.HotUpdateState, new HotUpdateState());
+            _stateMachine.RegisterState(GameDefine.LoginState, new LoginState());
+            _stateMachine.RegisterState(GameDefine.GameState, new GameState());
+            _stateMachine.RegisterState(GameDefine.BattleState, new BattleState());
 
             _gameLoop = new ClientGameLoop();
-            _gameLoop.Create(_gameLocate);
+            _gameLoop.Create(_gameLocate, new GameContext(this));
         }
 
         private void OnUpdate()
@@ -49,6 +57,11 @@ namespace FGame
         {
             Application.targetFrameRate = 60;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
+        }
+
+        public void ChangeState(int state)
+        {
+            _stateMachine.ChangeState(state);
         }
     }
 }
