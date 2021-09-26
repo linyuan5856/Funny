@@ -9,7 +9,7 @@ namespace FGame
     public class Game
     {
         private IGameLoop _gameLoop;
-        private GameLocate _gameLocate;
+        private IGameLocate _gameLocate;
         private StateMachine _stateMachine;
 
         public Game()

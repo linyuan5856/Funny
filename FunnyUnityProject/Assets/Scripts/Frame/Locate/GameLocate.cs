@@ -4,7 +4,7 @@ namespace GFrame
 {
     public class GameLocate : IGameLocate
     {
-        private Dictionary<string, ILocate> _locations = new Dictionary<string, ILocate>();
+        private readonly Dictionary<string, ILocate> _locations = new Dictionary<string, ILocate>();
 
         public void RegisterLocate(string name, ILocate location)
         {
@@ -13,9 +13,7 @@ namespace GFrame
 
         public ILocate GetLocate(string name)
         {
-            if (_locations.TryGetValue(name, out var locate))
-                return locate;
-            return null;
+            return _locations.TryGetValue(name, out var locate) ? locate : null;
         }
 
         public void OnUpdate()

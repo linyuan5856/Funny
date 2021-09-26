@@ -82,8 +82,7 @@ namespace GFrame.Service
 
         public void ResetService<T>() where T : IService
         {
-            if (!InternalTryGetService<T>(out var service))
-                return;
+            if (!InternalTryGetService<T>(out var service)) return;
             service.Reset();
         }
 

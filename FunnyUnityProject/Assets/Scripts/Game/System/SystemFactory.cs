@@ -37,16 +37,13 @@ namespace GFrame.System
         {
             _locate = null;
             foreach (var map in _systemDic)
-            {
                 map.Value.Create();
-            }
         }
 
         public void CreateSystem<T>() where T : ISystem
         {
             Type key = typeof(T);
-            if (_systemDic.ContainsKey(key))
-                return;
+            if (_systemDic.ContainsKey(key)) return;
             T t = Activator.CreateInstance<T>();
             t.Create(_locate);
             _systemDic.Add(key, t);

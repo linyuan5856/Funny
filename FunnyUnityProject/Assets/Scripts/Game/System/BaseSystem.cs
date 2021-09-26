@@ -14,20 +14,20 @@ namespace GFrame.System
             OnCreate();
         }
 
-        public void Create()
+        void ILocation.Create()
         {
         }
 
-        public void Update()
+        void ILocation.Update()
         {
             OnUpdate();
         }
 
-        public void Reset()
+        void ILocation.Reset()
         {
         }
 
-        public void Destroy()
+        void ILocation.Destroy()
         {
         }
 
