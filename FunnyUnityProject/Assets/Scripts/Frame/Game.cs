@@ -44,7 +44,14 @@ namespace FGame
             _stateMachine.RegisterState(GameDefine.GameState, new GameState());
             _stateMachine.RegisterState(GameDefine.BattleState, new BattleState());
 
-            _gameLoop = new ClientGameLoop();
+            var loader = serviceLocate.GetService<LoaderService>();
+            var config = loader.GetGameConfig();
+            GameLog.Assert(config != null, "config load failed");
+            if (config.IsSimulate)
+                _gameLoop = new SimulateGameLoop();
+            else
+                _gameLoop = new ClientGameLoop();
+            GameLog.Log($"game loop is create: {_gameLoop}");
             _gameLoop.Create(_gameLocate, new GameContext(this));
         }
 

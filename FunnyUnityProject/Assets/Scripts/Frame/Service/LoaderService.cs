@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -11,6 +12,7 @@ namespace GFrame.Service
     {
         AssetDataBase,
         Resource,
+        AssetBundle,
         Addressable,
     }
 
@@ -27,6 +29,7 @@ namespace GFrame.Service
             _loaderDic = new Dictionary<ELoadType, ILoader>
             {
                 { ELoadType.Resource, new ResourceLoader() },
+                { ELoadType.AssetBundle, new AssetBundleLoader() },
 #if UNITY_EDITOR
                 { ELoadType.AssetDataBase, new AssetDataBaseLoader() }
 #endif
@@ -40,10 +43,18 @@ namespace GFrame.Service
         }
 
 
-        private ILoader GetLoader()
+        public void SetLoader(ELoadType load)
         {
-            var success = _loaderDic.TryGetValue(_currentLoad, out var loader);
-            return success ? loader : null;
+            _currentLoad = load;
+        }
+
+        public GameConfig GetGameConfig()
+        {
+            var old = _currentLoad;
+            _currentLoad = ELoadType.Resource;
+            var config = Load<GameConfig>("Config/GameConfig");
+            _currentLoad = old;
+            return config;
         }
 
         public T Load<T>(string path) where T : Object
@@ -74,6 +85,51 @@ namespace GFrame.Service
         public void LoadSceneAsync(string sceneName, Action onLoadDone, LoadSceneMode mode = LoadSceneMode.Single)
         {
             _sceneLoader.LoadSceneAsync(sceneName, onLoadDone, mode);
+        }
+
+        public static bool IsResourceExist(string url, bool raiseError = true)
+        {
+            var pathType = GetResourceFullPath(url);
+            return !string.IsNullOrEmpty(pathType);
+        }
+
+        public static byte[] LoadAssetsSync(string path)
+        {
+            string fullPath = GetResourceFullPath(path);
+            if (string.IsNullOrEmpty(fullPath))
+                return null;
+
+            // if (Application.platform == RuntimePlatform.Android)
+            // {
+            //     return KEngineAndroidPlugin.GetAssetBytes(path);
+            //     //TODO 通过www/webrequest读取
+            // }
+
+            return ReadAllBytes(fullPath);
+        }
+
+        public static string GetResourceFullPath(string url)
+        {
+            string fullPath = "";
+            return fullPath;
+        }
+
+        public static byte[] ReadAllBytes(string resPath)
+        {
+            byte[] bytes;
+            using (FileStream fs = File.Open(resPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                bytes = new byte[fs.Length];
+                fs.Read(bytes, 0, (int)fs.Length);
+            }
+
+            return bytes;
+        }
+
+        private ILoader GetLoader()
+        {
+            var success = _loaderDic.TryGetValue(_currentLoad, out var loader);
+            return success ? loader : null;
         }
     }
 
@@ -119,6 +175,73 @@ namespace GFrame.Service
         private T InternalLoad<T>(string path) where T : Object
         {
             return Resources.Load<T>(path);
+        }
+    }
+
+
+    public class AssetBundleLoader : ILoader
+    {
+        private AssetBundleManifest _manifest;
+
+        public AssetBundleLoader()
+        {
+            Init();
+        }
+
+        private void Init()
+        {
+            var ab = LoadAb("AssetBundle", true);
+            var maniFest = ab.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            _manifest = maniFest;
+        }
+
+        private AssetBundle LoadAb(string name, bool isMain = false)
+        {
+            var path = PathUtil.GetAssetBundlePath();
+            var manifestPath = Path.Combine(path, name);
+            if (!isMain)
+            {
+                var dependencies = _manifest.GetAllDependencies(name);
+                foreach (var abDepend in dependencies)
+                    LoadAb(abDepend);
+            }
+
+            var ab = AssetBundle.LoadFromFile(manifestPath);
+            return ab;
+        }
+
+        public T Load<T>(string path) where T : Object
+        {
+            var ab = LoadAb(path);
+            return ab.LoadAsset<T>(path);
+        }
+
+        public void LoadAsync<T>(string path, Action<T> callBack) where T : Object
+        {
+            if (callBack == null) return;
+
+            var ab = LoadAb(path);
+            var abReq = ab.LoadAssetAsync<T>(path);
+            abReq.completed += op =>
+            {
+                if (op is AssetBundleRequest req)
+                    callBack?.Invoke(req.asset as T);
+            };
+        }
+
+        T ILoader.Instantiate<T>(string path)
+        {
+            T asset = Load<T>(path);
+            return asset != null ? Object.Instantiate(asset) : null;
+        }
+
+        void ILoader.InstantiateAsync<T>(string path, Action<T> callBack)
+        {
+            LoadAsync<T>(path, asset =>
+            {
+                if (asset != null)
+                    Object.Instantiate(asset);
+            });
         }
     }
 }
