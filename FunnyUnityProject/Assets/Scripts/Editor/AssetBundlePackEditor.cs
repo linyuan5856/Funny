@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,6 +11,12 @@ namespace GFrame
         public static void ClearAssetBundleName()
         {
             ClearAllAssetBundleNames();
+        }
+
+        [MenuItem("Tools/AssetBundle/Make AssetBundle Names")]
+        public static void MakeAssetBundleName()
+        {
+            MakeAllAssetBundleNames();
         }
 
         [MenuItem("Tools/AssetBundle/BuildStandaloneWindows64")]
@@ -42,7 +49,63 @@ namespace GFrame
             UnityEngine.Debug.Log("ab name clean finished count:" + abNames.Length);
         }
 
+        private static void MakeAllAssetBundleNames()
+        {
+            AssetBundleSetting setting =
+                AssetDatabase.LoadAssetAtPath<AssetBundleSetting>(AppDefine.AssetBundleSettingName);
+            if (setting == null)
+                return;
+            NameMappingTable nameTable =
+                AssetDatabase.LoadAssetAtPath<NameMappingTable>(AppDefine.NameMappingTableName);
+            if (nameTable == null)
+            {
+                nameTable = ScriptableObject.CreateInstance<NameMappingTable>();
+                AssetDatabase.CreateAsset(nameTable, AppDefine.NameMappingTableName);
+            }
+
+            foreach (var info in setting.Directory)
+                ProcessSingleDirectoryBundle(nameTable, info);
+        }
+
         private static void BuildBundle(BuildTarget target)
+        {
+            InternalBuildBundle(target);
+        }
+
+        private static void ProcessSingleDirectoryBundle(NameMappingTable nameTable, AssetBundleSettingInfo info)
+        {
+            if (info == null || info.file == null) return;
+            string fileName = AssetDatabase.GetAssetPath(info.file); //  Assets/Content/DynamicAssets/Prefabs/Character 
+            if (Directory.Exists(fileName))
+            {
+                string[] filenames = Directory.GetFiles(fileName, "*.*", SearchOption.AllDirectories);
+                foreach (var t in filenames)
+                {
+                    string f = t.Replace("\\", "/");
+                    if (string.IsNullOrEmpty(f) || f.Contains(".meta") || !f.Contains(".")) continue;
+                    if (!IsValidFile(f)) continue;
+                    CheckChineseName(fileName);
+                    var assetImporter = AssetImporter.GetAtPath(f);
+                    assetImporter.assetBundleName = nameTable.CreateAndGetNameMapping(f);
+                }
+            }
+            else
+                GameLog.LogError($"{info.file} is not exist");
+        }
+
+        private static bool IsValidFile(string fileName)
+        {
+            return true;
+        }
+
+        private static void CheckChineseName(string fileName)
+        {
+            bool bChinese = Regex.IsMatch(fileName, @"[\u4e00-\u9fa5]");
+            if (bChinese)
+                GameLog.LogError("文件名：" + fileName + "包含中文");
+        }
+
+        private static void InternalBuildBundle(BuildTarget target)
         {
             var abPath = PathUtil.GetAssetBundlePath(target);
             if (Directory.Exists(abPath))

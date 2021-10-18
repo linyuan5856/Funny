@@ -11,10 +11,19 @@ namespace GFrame
     {
         public static string GetAssetBundlePath()
         {
+            string StreamingAssetsPath = String.Empty;
+#if UNITY_EDITOR
             int index = Application.dataPath.LastIndexOf('/');
             var newPath = Application.dataPath.Substring(0, index);
-            var finalPath = newPath + "/AssetBundle";
-            return finalPath;
+            StreamingAssetsPath = newPath + "/AssetBundle";
+#elif UNITY_ANDROID
+            StreamingAssetsPath = "jar:file://" + Application.dataPath + "!/assets/";
+#elif UNITY_IPHONE
+            StreamingAssetsPath = Application.dataPath + "/Raw/";
+#else
+            StreamingAssetsPath = string.Empty;
+#endif
+            return StreamingAssetsPath;
         }
 
         public static string GetAssetBundlePath(RuntimePlatform platform)

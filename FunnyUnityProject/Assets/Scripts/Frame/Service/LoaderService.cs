@@ -199,7 +199,16 @@ namespace GFrame.Service
         private AssetBundle LoadAb(string name, bool isMain = false)
         {
             var path = PathUtil.GetAssetBundlePath(Application.platform);
-            var abPath = Path.Combine(path, name);
+            var abName = name;
+            if (!isMain)
+            {
+                //todo unity editor 
+                NameMappingTable nameTable =
+                    UnityEditor.AssetDatabase.LoadAssetAtPath<NameMappingTable>(AppDefine.NameMappingTableName);
+                abName = nameTable.CreateAndGetNameMapping(name);
+            }
+
+            var abPath = Path.Combine(path, abName);
             if (!isMain)
             {
                 var dependencies = _manifest.GetAllDependencies(name);

@@ -29,11 +29,11 @@ namespace GFrame
             var locate = _gameLocate.GetLocate(GameDefine.SERVICE_LOCATE) as ServiceLocate;
             var loader = locate.GetService<LoaderService>();
             loader.SetLoader(ELoadType.AssetBundle);
-
+            var assetPath = @"Assets/~Test/~AbFolder/Capsule.prefab";
             if (bAsync)
-                loader.InstantiateAsync<GameObject>("cube",null);
+                loader.InstantiateAsync<GameObject>(assetPath,null);
             else
-                loader.Instantiate<GameObject>("cube");
+                loader.Instantiate<GameObject>(assetPath);
         }
     }
 }
