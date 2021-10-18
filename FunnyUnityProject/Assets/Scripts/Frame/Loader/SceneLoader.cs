@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.ResourceManagement.ResourceProviders;
 using Object = UnityEngine.Object;
 
 
@@ -161,22 +158,5 @@ namespace GFrame
                 _onLoadDone = null;
             }
         }
-
-        #region Addressable
-
-        public void LoadSceneAddressable(string key, LoadSceneMode loadMode = LoadSceneMode.Single,
-            bool activateOnLoad = true, int priority = 100)
-        {
-            AsyncOperationHandle<SceneInstance> handle =
-                Addressables.LoadSceneAsync(key, loadMode, activateOnLoad, priority);
-        }
-
-        public void UnLoadSceneAsyncAddressable(AsyncOperationHandle<SceneInstance> handle,
-            bool autoReleaseHandle = true)
-        {
-            Addressables.UnloadSceneAsync(handle, autoReleaseHandle);
-        }
-
-        #endregion
     }
 }
