@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -19,13 +18,13 @@ namespace GFrame
             BuildBundle(BuildTarget.StandaloneWindows64);
         }
 
-        [MenuItem("Tools/AssetBundle/BuildStandaloneWindows64")]
+        [MenuItem("Tools/AssetBundle/BuildAndroid")]
         public static void BuildAndroidBundle()
         {
             BuildBundle(BuildTarget.Android);
         }
 
-        [MenuItem("Tools/AssetBundle/BuildStandaloneWindows64")]
+        [MenuItem("Tools/AssetBundle/BuildIOS")]
         public static void BuildIOSBundle()
         {
             BuildBundle(BuildTarget.iOS);
@@ -45,35 +44,15 @@ namespace GFrame
 
         private static void BuildBundle(BuildTarget target)
         {
-            var abPath = PathUtil.GetAssetBundlePath();
-            if (!Directory.Exists(abPath))
-                Directory.CreateDirectory(abPath);
-            else
+            var abPath = PathUtil.GetAssetBundlePath(target);
+            if (Directory.Exists(abPath))
                 Directory.Delete(abPath, true);
+            Directory.CreateDirectory(abPath);
 
-            string platformPath = string.Empty;
-            switch (target)
-            {
-                case BuildTarget.StandaloneWindows:
-                    platformPath = "Windows";
-                    break;
-                case BuildTarget.iOS:
-                    platformPath = "IOS";
-                    break;
-                case BuildTarget.Android:
-                    platformPath = "Android";
-                    break;
-                case BuildTarget.StandaloneWindows64:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(target), target, null);
-            }
-
-            abPath = abPath + "/" + platformPath;
             var option = BuildAssetBundleOptions.ChunkBasedCompression |
                          BuildAssetBundleOptions.IgnoreTypeTreeChanges;
             BuildPipeline.BuildAssetBundles(abPath, option, target);
-            Debug.Log($"build AssetBundle Done: {target}  ");
+            Debug.Log($"build AssetBundle Done: {target}   path:{abPath} ");
         }
     }
 }

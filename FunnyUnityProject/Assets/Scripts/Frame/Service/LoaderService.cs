@@ -190,15 +190,16 @@ namespace GFrame.Service
 
         private void Init()
         {
-            var ab = LoadAb("AssetBundle", true);
+            string mainFestName = PathUtil.GetPlatformPath(Application.platform);
+            var ab = LoadAb(mainFestName, true);
             var maniFest = ab.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
             _manifest = maniFest;
         }
 
         private AssetBundle LoadAb(string name, bool isMain = false)
         {
-            var path = PathUtil.GetAssetBundlePath();
-            var manifestPath = Path.Combine(path, name);
+            var path = PathUtil.GetAssetBundlePath(Application.platform);
+            var abPath = Path.Combine(path, name);
             if (!isMain)
             {
                 var dependencies = _manifest.GetAllDependencies(name);
@@ -206,7 +207,7 @@ namespace GFrame.Service
                     LoadAb(abDepend);
             }
 
-            var ab = AssetBundle.LoadFromFile(manifestPath);
+            var ab = AssetBundle.LoadFromFile(abPath);
             return ab;
         }
 
