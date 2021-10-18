@@ -31,16 +31,9 @@ namespace GFrame
             loader.SetLoader(ELoadType.AssetBundle);
 
             if (bAsync)
-            {
                 loader.InstantiateAsync<GameObject>("cube",null);
-            }
             else
-            {
-                var asset = loader.Load<GameObject>("cube");
-                GameLog.Assert(asset != null, "asset  load failed");
-                if (asset != null)
-                    Object.Instantiate(asset);
-            }
+                loader.Instantiate<GameObject>("cube");
         }
     }
 }
