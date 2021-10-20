@@ -15,13 +15,13 @@ public class NameMappingTable : ScriptableObject
 {
     public List<NameMappingInfo> mapTable;
 
-    public string CreateAndGetNameMapping(string fileName)
+    public string GetNameMapping(string fileName)
     {
         mapTable ??= new List<NameMappingInfo>();
 
         string path = Path.GetDirectoryName(fileName);
         string name = Path.GetFileNameWithoutExtension(fileName).Replace(" ", "");
-        Debug.Log($"Create Name Mapping [fileName:{fileName}]  [path: {path}]  [name: {name}] ");
+        Debug.Log($" Name Mapping [fileName:{fileName}]  [path: {path}]  [name: {name}] ");
         if (string.IsNullOrEmpty(path))
             return (name + AppDefine.ExtName).ToLower();
 

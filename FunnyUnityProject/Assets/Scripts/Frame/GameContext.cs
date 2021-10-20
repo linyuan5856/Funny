@@ -1,4 +1,4 @@
-﻿namespace FGame
+﻿namespace FFrame
 {
     public class GameContext
     {

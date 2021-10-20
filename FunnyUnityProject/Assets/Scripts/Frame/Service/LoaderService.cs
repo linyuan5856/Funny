@@ -13,7 +13,6 @@ namespace GFrame.Service
         AssetDataBase,
         Resource,
         AssetBundle,
-        Addressable,
     }
 
     public partial class LoaderService : BaseService
@@ -87,6 +86,41 @@ namespace GFrame.Service
             _sceneLoader.LoadSceneAsync(sceneName, onLoadDone, mode);
         }
 
+        public void Collect(bool unloadRes, bool gcCollect, bool unloadAssetBundle)
+        {
+            if (unloadRes)
+                Resources.UnloadUnusedAssets();
+            if (gcCollect)
+                GC.Collect();
+            if (unloadAssetBundle)
+            {
+                var old = _currentLoad;
+                SetLoader(ELoadType.AssetBundle);
+                if (GetLoader() is AssetBundleLoader loader)
+                    loader.ReleaseAll();
+                SetLoader(old);
+                AssetBundle.UnloadAllAssetBundles(true);
+            }
+        }
+
+        public void UnLoadAsset(Object res)
+        {
+            Resources.UnloadAsset(res);
+        }
+
+        public bool UnLoadAssetBundle(string name, bool unLoadLoaded)
+        {
+            var loader = ForceGetLoader<AssetBundleLoader>(ELoadType.AssetBundle);
+            return loader.UnLoadAssetBundle(name, unLoadLoaded);
+        }
+
+        public AsyncOperation UnLoadAssetBundleAsync(string name, bool unLoadLoaded)
+        {
+            var loader = ForceGetLoader<AssetBundleLoader>(ELoadType.AssetBundle);
+            return loader.UnLoadAssetBundleAsync(name, unLoadLoaded);
+        }
+
+
         public static bool IsResourceExist(string url, bool raiseError = true)
         {
             var pathType = GetResourceFullPath(url);
@@ -130,6 +164,12 @@ namespace GFrame.Service
         {
             var success = _loaderDic.TryGetValue(_currentLoad, out var loader);
             return success ? loader : null;
+        }
+
+        private T ForceGetLoader<T>(ELoadType loadType) where T : class, ILoader
+        {
+            SetLoader(loadType);
+            return GetLoader() as T;
         }
     }
 
@@ -182,42 +222,73 @@ namespace GFrame.Service
     public class AssetBundleLoader : ILoader
     {
         private AssetBundleManifest _manifest;
+        private NameMappingTable _nameMappingTable;
+        private Dictionary<string, AssetBundle> _cache;
 
         public AssetBundleLoader()
         {
             Init();
         }
 
-        private void Init()
+        public void ReleaseAll()
         {
-            string mainFestName = PathUtil.GetPlatformPath(Application.platform);
-            var ab = LoadAb(mainFestName, true);
-            var maniFest = ab.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-            _manifest = maniFest;
+            _cache.Clear();
+            _nameMappingTable = null;
+            _manifest = null;
         }
 
-        private AssetBundle LoadAb(string name, bool isMain = false)
+        private void Init()
         {
+            _cache = new Dictionary<string, AssetBundle>();
+
+            string mainFestName = PathUtil.GetPlatformPath(Application.platform);
+            var ab = LoadAb(mainFestName, false);
+            var maniFest = ab.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            _manifest = maniFest;
+
+            var tableAssetBundle = LoadAb("namemappingtable.0", false);
+            _nameMappingTable = tableAssetBundle.LoadAsset<NameMappingTable>("NameMappingTable");
+        }
+
+        private AssetBundle LoadAb(string name, bool bNameMapping = true)
+        {
+            if (_cache.TryGetValue(name, out var assetBundle))
+                return assetBundle;
+
             var path = PathUtil.GetAssetBundlePath(Application.platform);
             var abName = name;
-            if (!isMain)
-            {
-                //todo unity editor 
-                NameMappingTable nameTable =
-                    UnityEditor.AssetDatabase.LoadAssetAtPath<NameMappingTable>(AppDefine.NameMappingTableName);
-                abName = nameTable.CreateAndGetNameMapping(name);
-            }
+            if (bNameMapping)
+                abName = _nameMappingTable.GetNameMapping(name);
 
             var abPath = Path.Combine(path, abName);
-            if (!isMain)
+            if (_manifest)
             {
-                var dependencies = _manifest.GetAllDependencies(name);
+                var dependencies = _manifest.GetAllDependencies(abName);
                 foreach (var abDepend in dependencies)
-                    LoadAb(abDepend);
+                    LoadAb(abDepend, false);
             }
 
             var ab = AssetBundle.LoadFromFile(abPath);
+            _cache.Add(name, ab);
+            GameLog.LogWarn($"[Asset Bundle] Load : {abPath}");
             return ab;
+        }
+
+        public bool UnLoadAssetBundle(string name, bool unLoadLoaded)
+        {
+            if (!_cache.TryGetValue(name, out var ab))
+                return false;
+            ab.Unload(unLoadLoaded);
+            _cache.Remove(name);
+            GameLog.Log($"[Asset Bundle] Unload: {name} IsForceUnload: {unLoadLoaded}");
+            return true;
+        }
+
+        public AsyncOperation UnLoadAssetBundleAsync(string name, bool unLoadLoaded)
+        {
+            if (!_cache.TryGetValue(name, out var ab)) return null;
+            AsyncOperation op = ab.UnloadAsync(unLoadLoaded);
+            return op;
         }
 
         public T Load<T>(string path) where T : Object

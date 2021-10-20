@@ -4,7 +4,7 @@ using GFrame.StateMachine;
 using GFrame.System;
 using UnityEngine;
 
-namespace FGame
+namespace FFrame
 {
     public class Game
     {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace FGame
+namespace FFrame
 {
     public class GameEntry : MonoBehaviour
     {

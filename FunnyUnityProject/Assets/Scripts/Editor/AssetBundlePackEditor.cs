@@ -86,7 +86,7 @@ namespace GFrame
                     if (!IsValidFile(f)) continue;
                     CheckChineseName(fileName);
                     var assetImporter = AssetImporter.GetAtPath(f);
-                    assetImporter.assetBundleName = nameTable.CreateAndGetNameMapping(f);
+                    assetImporter.assetBundleName = nameTable.GetNameMapping(f);
                 }
             }
             else

@@ -1,4 +1,4 @@
-using FGame;
+using FFrame;
 
 namespace GFrame
 {

@@ -1,4 +1,4 @@
-using FGame;
+using FFrame;
 using GFrame.Service;
 using UnityEngine;
 
@@ -19,21 +19,26 @@ namespace GFrame
         void IGameLoop.OnUpdate()
         {
             _gameLocate?.OnUpdate();
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                var loader = GameUtil.GetService<LoaderService>(_gameLocate);
+                loader.UnLoadAssetBundle(testAssetName, true);
+            }
         }
 
 
         private bool bAsync;
+        private const string testAssetName = @"Assets/~Test/~AbFolder/Capsule.prefab";
 
         void BeginSimulate()
         {
-            var locate = _gameLocate.GetLocate(GameDefine.SERVICE_LOCATE) as ServiceLocate;
-            var loader = locate.GetService<LoaderService>();
+            var loader = GameUtil.GetService<LoaderService>(_gameLocate);
             loader.SetLoader(ELoadType.AssetBundle);
-            var assetPath = @"Assets/~Test/~AbFolder/Capsule.prefab";
             if (bAsync)
-                loader.InstantiateAsync<GameObject>(assetPath,null);
+                loader.InstantiateAsync<GameObject>(testAssetName, null);
             else
-                loader.Instantiate<GameObject>(assetPath);
+                loader.Instantiate<GameObject>(testAssetName);
         }
     }
 }
