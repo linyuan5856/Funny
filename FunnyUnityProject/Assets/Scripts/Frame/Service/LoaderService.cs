@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using FFrame;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -223,7 +224,7 @@ namespace GFrame.Service
     {
         private AssetBundleManifest _manifest;
         private NameMappingTable _nameMappingTable;
-        private Dictionary<string, AssetBundle> _cache;
+        private Dictionary<string, AssetBundleAsset> _cache;
 
         public AssetBundleLoader()
         {
@@ -239,7 +240,7 @@ namespace GFrame.Service
 
         private void Init()
         {
-            _cache = new Dictionary<string, AssetBundle>();
+            _cache = new Dictionary<string, AssetBundleAsset>();
 
             string mainFestName = PathUtil.GetPlatformPath(Application.platform);
             var ab = LoadAb(mainFestName, false);
@@ -252,8 +253,8 @@ namespace GFrame.Service
 
         private AssetBundle LoadAb(string name, bool bNameMapping = true)
         {
-            if (_cache.TryGetValue(name, out var assetBundle))
-                return assetBundle;
+            if (_cache.TryGetValue(name, out var asset))
+                return asset.Asset;
 
             var path = PathUtil.GetAssetBundlePath(Application.platform);
             var abName = name;
@@ -268,17 +269,17 @@ namespace GFrame.Service
                     LoadAb(abDepend, false);
             }
 
-            var ab = AssetBundle.LoadFromFile(abPath);
-            _cache.Add(name, ab);
+            AssetBundleAsset abAsset = new AssetBundleAsset();
+            _cache.Add(name, abAsset);
+            var ab = abAsset.Load(abPath);
             GameLog.LogWarn($"[Asset Bundle] Load : {abPath}");
             return ab;
         }
 
         public bool UnLoadAssetBundle(string name, bool unLoadLoaded)
         {
-            if (!_cache.TryGetValue(name, out var ab))
-                return false;
-            ab.Unload(unLoadLoaded);
+            if (!_cache.TryGetValue(name, out var asset)) return false;
+            asset.UnLoad(unLoadLoaded);
             _cache.Remove(name);
             GameLog.Log($"[Asset Bundle] Unload: {name} IsForceUnload: {unLoadLoaded}");
             return true;
@@ -286,8 +287,8 @@ namespace GFrame.Service
 
         public AsyncOperation UnLoadAssetBundleAsync(string name, bool unLoadLoaded)
         {
-            if (!_cache.TryGetValue(name, out var ab)) return null;
-            AsyncOperation op = ab.UnloadAsync(unLoadLoaded);
+            if (!_cache.TryGetValue(name, out var asset)) return null;
+            AsyncOperation op = asset.UnLoadAsync(unLoadLoaded);
             return op;
         }
 
