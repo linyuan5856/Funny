@@ -42,6 +42,11 @@ namespace GFrame.Service
             SceneLoader.DestroyLoader();
         }
 
+        protected override void OnUpdate()
+        {
+            base.OnUpdate();
+            
+        }
 
         public void SetLoader(ELoadType load)
         {
