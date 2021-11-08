@@ -1,4 +1,7 @@
-﻿namespace GFrame.Ui
+﻿using GFrame.Service;
+using UnityEngine;
+
+namespace GFrame.Ui
 {
     public struct CreateUiParam
     {
@@ -12,11 +15,30 @@
         public bool IsTickWindow;
         private bool IsAutoOpen;
         private UiWindow _window;
+        private LoaderService _loader;
+        private string _uiPath;
 
-        public void Create(CreateUiParam param)
+        public UiWindow Window => _window;
+
+        public void Create(LoaderService loader, CreateUiParam param)
         {
+            _loader = loader;
             IsTickWindow = param.IsTick;
             IsAutoOpen = param.IsAutoOpen;
+            _uiPath = param.Path;
+        }
+
+        public void LoadSync()
+        {
+            _loader.SetLoader(ELoadType.AssetBundle);
+            var prefab = _loader.Instantiate<GameObject>(_uiPath);
+            _window = prefab.GetComponent<UiWindow>();
+        }
+
+        public void Open()
+        {
+            if (_window != null)
+                _window.OpenWindow();
         }
 
         public void Update()

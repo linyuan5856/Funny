@@ -1,5 +1,6 @@
 using FFrame;
 using GFrame.Service;
+using GFrame.System;
 using UnityEngine;
 
 namespace GFrame
@@ -39,6 +40,8 @@ namespace GFrame
                 loader.InstantiateAsync<GameObject>(testAssetName, null);
             else
                 loader.Instantiate<GameObject>(testAssetName);
+            var uiSystem = GameUtil.GetSystem<UiSystem>(_gameLocate);
+            uiSystem.OpenWindow<UI_Login>();
         }
     }
 }
