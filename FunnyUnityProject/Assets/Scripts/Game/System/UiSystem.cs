@@ -25,7 +25,7 @@ namespace GFrame.System
             {
                 var loader = GetLoadService();
                 loader.SetLoader(ELoadType.Resource);
-                var root = loader.Instantiate<GameObject>("prefab/uiroot");
+                var root = loader.Instantiate<GameObject>(GameDefine.UiRootPrefabPath);
                 _canvasRoot = root.GetComponentInChildren<Canvas>();
             }
 
@@ -65,7 +65,7 @@ namespace GFrame.System
                 controller = new UiController();
                 controller.Create(GetLoadService(), new CreateUiParam
                 {
-                    Path = @"Assets/~Test/~UI/" + key.Name + ".prefab",
+                    Path = GetUiPath(key.Name),
                     IsTick = isTick,
                     IsAutoOpen = isAutoOpen,
                 });
@@ -80,6 +80,7 @@ namespace GFrame.System
 
             controller.Open();
         }
+
 
         public void CloseWindow<T>() where T : UiWindow
         {
@@ -105,6 +106,11 @@ namespace GFrame.System
         private bool HasUiLoaded(Type key)
         {
             return _openedUiDic.ContainsKey(key);
+        }
+
+        private string GetUiPath(string ui)
+        {
+            return $"{GameDefine.UIPath}{ui}.prefab";
         }
     }
 }

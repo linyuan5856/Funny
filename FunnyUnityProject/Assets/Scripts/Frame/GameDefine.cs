@@ -1,5 +1,9 @@
 public static class GameDefine
 {
+    public const string UiRootPrefabPath = "prefab/UiRoot";
+    public const string UIPath = "Assets/~Test/~UI/";
+    public const string LuaPath = "Lua";
+    
     public const string SERVICE_LOCATE = "ServiceLocate";
     public const string SYSTEM_LOCATE = "SystemLocate";
 
