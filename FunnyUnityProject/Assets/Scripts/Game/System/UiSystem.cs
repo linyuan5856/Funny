@@ -1,13 +1,36 @@
 using System;
 using System.Collections.Generic;
+using GFrame.Service;
 using GFrame.Ui;
+using UnityEngine;
 
 namespace GFrame.System
 {
     public class UiSystem : BaseSystem
     {
         private Dictionary<Type, UiController> _openedUiDic;
-        private List<UiController> _tickList = new List<UiController>();
+        private readonly List<UiController> _tickList = new List<UiController>();
+
+        private LoaderService _loaderService;
+        private Canvas _canvasRoot;
+
+        private LoaderService GetLoadService()
+        {
+            return _loaderService ??= GetService<LoaderService>();
+        }
+
+        private Canvas GetCanvas()
+        {
+            if (_canvasRoot == null)
+            {
+                var loader = GetLoadService();
+                loader.SetLoader(ELoadType.Resource);
+                var root = loader.Instantiate<GameObject>(GameDefine.UiRootPrefabPath);
+                _canvasRoot = root.GetComponentInChildren<Canvas>();
+            }
+
+            return _canvasRoot;
+        }
 
         protected override void OnCreate()
         {
@@ -21,38 +44,48 @@ namespace GFrame.System
             for (int i = _tickList.Count - 1; i >= 0; i--)
             {
                 var controller = _tickList[i];
-                if (controller.IsTickWindow)
-                    controller.Update();
+                if (!controller.IsTickWindow)
+                {
+                    _tickList.RemoveAt(i);
+                    continue;
+                }
+
+                controller.Update();
             }
         }
 
-        public void OpenWindow<T>(bool isAutoOpen, bool isTick) where T : UiWindow
+        public void OpenWindow<T>(bool isAutoOpen = true, bool isTick = true) where T : UiWindow
         {
             Type key = typeof(T);
             UiController controller = null;
             if (HasUiLoaded(key))
-            {
                 controller = _openedUiDic[key];
-                return;
+            else
+            {
+                controller = new UiController();
+                controller.Create(GetLoadService(), new CreateUiParam
+                {
+                    Path = GetUiPath(key.Name),
+                    IsTick = isTick,
+                    IsAutoOpen = isAutoOpen,
+                });
+                _openedUiDic[key] = controller;
+                if (isTick)
+                    _tickList.Add(controller);
+                controller.LoadSync();
+                var window = controller.Window;
+                window.transform.SetParent(GetCanvas().transform);
+                window.transform.localPosition = Vector3.zero;
             }
 
-            controller = new UiController();
-            controller.Create(new CreateUiParam
-            {
-                Path = key.Name,
-                IsTick = isTick,
-                IsAutoOpen = isAutoOpen
-            });
-            _openedUiDic[key] = controller;
-            if (isTick)
-                _tickList.Add(controller);
+            controller.Open();
         }
+
 
         public void CloseWindow<T>() where T : UiWindow
         {
             Type key = typeof(T);
-            if (!HasUiLoaded(key))
-                return;
+            if (!HasUiLoaded(key)) return;
             var controller = _openedUiDic[key];
             controller.Close();
             if (controller.IsTickWindow)
@@ -62,8 +95,7 @@ namespace GFrame.System
         public void DestroyWindow<T>() where T : UiWindow
         {
             Type key = typeof(T);
-            if (!HasUiLoaded(key))
-                return;
+            if (!HasUiLoaded(key)) return;
             var controller = _openedUiDic[key];
             controller.Destroy();
             _openedUiDic.Remove(key);
@@ -74,6 +106,11 @@ namespace GFrame.System
         private bool HasUiLoaded(Type key)
         {
             return _openedUiDic.ContainsKey(key);
+        }
+
+        private string GetUiPath(string ui)
+        {
+            return $"{GameDefine.UIPath}{ui}.prefab";
         }
     }
 }

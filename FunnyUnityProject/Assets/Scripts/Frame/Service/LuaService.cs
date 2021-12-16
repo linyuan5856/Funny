@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -17,13 +16,7 @@ namespace GFrame.Service
         private LuaEnv _luaEnv;
         public LuaEnv ENV => _luaEnv;
 
-        public static LuaService Instance = new LuaService();
-
         public bool IsInited { get; private set; }
-
-        private double _initProgress = 0;
-
-        public double InitProgress => _initProgress;
 
 
         /// <summary>
@@ -47,11 +40,6 @@ namespace GFrame.Service
             UnityEngine.Debug.Log("Consturct LuaModule...");
 #endif
             _luaEnv = new LuaEnv();
-        }
-
-
-        public IEnumerator Init()
-        {
             var L = _luaEnv.L;
             //在lua G中增加import函数
             LuaDLL.lua_pushstdcallcfunction(L, LuaImport);
@@ -62,9 +50,14 @@ namespace GFrame.Service
             _luaEnv.AddBuildin("lpeg", XLua.LuaDLL.Lua.LoadLpeg);
             _luaEnv.AddBuildin("pb", XLua.LuaDLL.Lua.LoadLuaProfobuf);
             _luaEnv.AddBuildin("ffi", XLua.LuaDLL.Lua.LoadFFI);
-            yield return null;
             CallScript("Init");
             IsInited = true;
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            ClearData();
         }
 
         public void ClearData()
@@ -125,7 +118,7 @@ namespace GFrame.Service
         /// <returns></returns>
         static string GetScriptPath(string scriptRelativePath)
         {
-            return string.Format("{0}/{1}.lua", "Lua", scriptRelativePath);
+            return $"{GameDefine.LuaPath}/{scriptRelativePath}.lua";
         }
 
         /// <summary>
@@ -150,12 +143,12 @@ namespace GFrame.Service
         {
             if (scriptRelativePath == null || string.IsNullOrEmpty(scriptRelativePath))
                 return null;
-            
+
             var scriptPath = GetScriptPath(scriptRelativePath);
-            if (!LoaderService.IsResourceExist(scriptPath)) 
+            if (!LoaderService.IsResourceExist(scriptPath))
                 return null;
-            
-            byte[] script =LoaderService.LoadAssetsSync(scriptPath);
+
+            byte[] script = LoaderService.LoadAssetsSync(scriptPath);
             UnityEngine.Debug.Assert(script != null, $"ExecuteScript error,script byte null,path:{scriptPath}");
             var ret = ExecuteScript(script, scriptRelativePath);
             return ret;
@@ -196,7 +189,7 @@ namespace GFrame.Service
 
             if (!HasScript(fileName))
             {
-               UnityEngine.Debug.LogError($"{fileName} not exist !");
+                UnityEngine.Debug.LogError($"{fileName} not exist !");
                 return false;
             }
 

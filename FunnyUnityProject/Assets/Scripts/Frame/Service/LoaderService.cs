@@ -45,7 +45,6 @@ namespace GFrame.Service
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            
         }
 
         public void SetLoader(ELoadType load)
@@ -300,7 +299,18 @@ namespace GFrame.Service
         public T Load<T>(string path) where T : Object
         {
             var ab = LoadAb(path);
-            return ab.LoadAsset<T>(path);
+            if (ab == null)
+            {
+                GameLog.LogError("load ab failed");
+                return default;
+            }
+
+            path = path.ToLower();
+            T result = ab.LoadAsset<T>(path);
+            GameLog.Assert(result != null, $"load {path} ,but asset is null");
+            // foreach (var asset in ab.GetAllAssetNames())
+            //     Debug.Log(asset);
+            return result;
         }
 
         public void LoadAsync<T>(string path, Action<T> callBack) where T : Object
